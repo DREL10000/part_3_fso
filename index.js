@@ -40,6 +40,12 @@ app.get('/info', (request, response) => {
     response.send(text)
 })
 
+app.get('/api/persons/:id', (request, response) =>{
+  const id = request.params.id
+  const person = persons.find(p => p.id === id)
+  person ? response.json(person) : response.status(404).end()
+})
+
 //set port number
 const PORT = 3001
 
