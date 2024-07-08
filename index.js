@@ -1,11 +1,23 @@
 //import express
 const express = require('express')
+const morgan = require('morgan')
+
+
 
 //set the app to reference express
 const app = express()
 
 //middleware to ensure that request.body is not undefined
 app.use(express.json())
+morgan.token('body', (req, res) => { return req.body})
+morgan.token('body', (req)=>{
+  return JSON.stringify({"name": req.body.name, "number": req.body.number})
+})
+morgan.token('len', (req) => {
+  return req.headers['content-length']
+})
+
+app.use(morgan(':method :url :status :len - :response-time ms :body'))
 
 persons = [
   {
@@ -111,7 +123,6 @@ app.post('/api/persons', (request, response) => {
   }
 
   persons = persons.concat(person)
-  console.log(persons)
   response.json(person)
 
 })
