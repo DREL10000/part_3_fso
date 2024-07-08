@@ -9,7 +9,6 @@ const app = express()
 
 //middleware to ensure that request.body is not undefined
 app.use(express.json())
-morgan.token('body', (req, res) => { return req.body})
 morgan.token('body', (req)=>{
   return JSON.stringify({"name": req.body.name, "number": req.body.number})
 })
