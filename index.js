@@ -1,6 +1,7 @@
 //import express
 const express = require('express')
 const morgan = require('morgan')
+const cors = require('cors')
 
 
 
@@ -9,6 +10,7 @@ const app = express()
 
 //middleware to ensure that request.body is not undefined
 app.use(express.json())
+app.use(cors())
 morgan.token('body', (req)=>{
   return JSON.stringify({"name": req.body.name, "number": req.body.number})
 })
