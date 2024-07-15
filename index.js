@@ -19,6 +19,7 @@ morgan.token('len', (req) => {
 })
 
 app.use(morgan(':method :url :status :len - :response-time ms :body'))
+app.use(express.static('dist'))
 
 persons = [
   {
@@ -128,7 +129,7 @@ app.post('/api/persons', (request, response) => {
 
 })
 //set port number
-const PORT = 3001
+const PORT = process.env.PORT || 3001
 
 //bind app to port
 app.listen(PORT, () => {
