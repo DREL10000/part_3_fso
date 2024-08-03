@@ -11,19 +11,36 @@ const Contact = require('./models/contact')
 const app = express()
 
 //middleware to ensure that request.body is not undefined
+app.use(express.static('dist'))
 app.use(express.json())
-app.use(cors())
+
+/* requestlogger middleware */
 morgan.token('body', (req) => {
   return JSON.stringify({ "name": req.body.name, "number": req.body.number })
 })
 morgan.token('len', (req) => {
   return req.headers['content-length']
 })
+/* end of requestlogger middleware */
 
 app.use(morgan(':method :url :status :len - :response-time ms :body'))
-app.use(express.static('dist'))
+
+app.use(cors())
 
 
+
+// error handler for middleware
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id'})
+  }
+
+  next(error)
+}
+
+/* start of route registrations */
 app.get('/api/persons', (request, response) => {
   Contact.find({}).then(c => {
     response.json(c)
@@ -39,7 +56,7 @@ app.get('/info', (request, response) => {
   })
 })
 
-app.get('/api/persons/:id', (request, response) => {
+app.get('/api/persons/:id', (request, response, next) => {
   Contact.findById(request.params.id).then(c => {
     if (c) {
       response.json(c)
@@ -48,18 +65,17 @@ app.get('/api/persons/:id', (request, response) => {
     }
     mongoose.connection.close()
   })
-    .catch(error => {
-      console.log(error)
-      response.status(400).send({ error: 'malformatted id' })
-    })
+    .catch(error => next(error))
 })
 
-/*
-app.delete('/api/persons/:id', (request, response) => {
-  const id = request.params.id
-  persons = persons.filter(person => person.id !== id)
-  response.status(204).end()
-});*/
+
+app.delete('/api/persons/:id', (request, response, next) => {
+  Contact.findByIdAndDelete(request.params.id)
+  .then(result =>{
+    response.status(204).end()
+  })
+  .catch(error => next(error))
+});
 
 
 app.post('/api/persons', (request, response) => {
@@ -78,6 +94,25 @@ app.post('/api/persons', (request, response) => {
     response.json(result)
   })
 })
+
+app.put('/api/persons/:id', (request, response, next) =>{
+  const body = request.body
+
+  const contact = {
+    name: body.name,
+    number: body.number,
+  }
+
+  Contact.findByIdAndUpdate(request.params.id, contact, {new: true })
+  .then(updateContact => {
+    response.json(updateContact)
+  })
+  .catch(error => next(error))
+})
+
+app.use(errorHandler)
+/* end of route registrations */
+
 //set port number
 const PORT = process.env.PORT
 
