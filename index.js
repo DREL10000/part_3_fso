@@ -16,7 +16,7 @@ app.use(express.json())
 
 /* requestlogger middleware */
 morgan.token('body', (req) => {
-  return JSON.stringify({ "name": req.body.name, "number": req.body.number })
+  return JSON.stringify({ 'name': req.body.name, 'number': req.body.number })
 })
 morgan.token('len', (req) => {
   return req.headers['content-length']
@@ -34,10 +34,9 @@ const errorHandler = (error, request, response, next) => {
   console.error(error.message)
 
   if (error.name === 'CastError') {
-    return response.status(400).send({ error: 'malformatted id'})
-  } else if (error.name === 'ValidationError')
-  {    
-    return response.status(400).json({ error: error.message }) 
+    return response.status(400).send({ error: 'malformatted id' })
+  } else if (error.name === 'ValidationError') {
+    return response.status(400).json({ error: error.message })
   }
 
   next(error)
@@ -53,7 +52,7 @@ app.get('/api/persons', (request, response) => {
 
 app.get('/info', (request, response) => {
   const date = new Date()
-  Contact.find({}).then(c =>{
+  Contact.find({}).then(c => {
     const text = `<p>Phonebook has info for ${c.length} people</p> <p>${date}</p>`
     response.send(text)
   })
@@ -74,16 +73,16 @@ app.get('/api/persons/:id', (request, response, next) => {
 
 app.delete('/api/persons/:id', (request, response, next) => {
   Contact.findByIdAndDelete(request.params.id)
-  .then(result =>{
-    response.status(204).end()
-  })
-  .catch(error => next(error))
-});
+    .then(() => {
+      response.status(204).end()
+    })
+    .catch(error => next(error))
+})
 
 
 app.post('/api/persons', (request, response, next) => {
   const body = request.body
-  
+
   const contact = new Contact({
     name: body.name,
     number: body.number
@@ -93,17 +92,17 @@ app.post('/api/persons', (request, response, next) => {
     console.log(`added ${result.name} number ${result.number} to phonebook`)
     response.json(result)
   })
-  .catch(error => next(error))
+    .catch(error => next(error))
 })
 
-app.put('/api/persons/:id', (request, response, next) =>{
+app.put('/api/persons/:id', (request, response, next) => {
   const { name, number } = request.body
 
-  Contact.findByIdAndUpdate(request.params.id, {name, number}, {new: true, runValidators: true, context: 'query' })
-  .then(updateContact => {
-    response.json(updateContact)
-  })
-  .catch(error => next(error))
+  Contact.findByIdAndUpdate(request.params.id, { name, number }, { new: true, runValidators: true, context: 'query' })
+    .then(updateContact => {
+      response.json(updateContact)
+    })
+    .catch(error => next(error))
 })
 
 app.use(errorHandler)
